@@ -1,0 +1,481 @@
+<title>The Billion Club</title>
+<style>
+  :root {
+    --bg: #0e1013;
+    --panel: #16181c;
+    --panel-2: #1b1e23;
+    --text: #ece7dc;
+    --muted: #8d9096;
+    --line: rgba(236, 231, 220, 0.1);
+    --accent: #ff6a39;
+    --accent-dim: rgba(255, 106, 57, 0.16);
+    --good: #4fae6d;
+    --good-dim: rgba(79, 174, 109, 0.14);
+    --bad: #d65b5b;
+    --bad-dim: rgba(214, 91, 91, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+
+  .stage {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .brand {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .brand span { color: var(--accent); }
+
+  .score {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .score b { color: var(--text); font-weight: 600; }
+
+  .progress {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 36px;
+  }
+  .progress i {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--line);
+    display: block;
+    transition: background 0.4s ease;
+  }
+  .progress i.done { background: var(--accent); }
+  .progress i.right { background: var(--good); }
+  .progress i.wrong { background: var(--bad); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 40px 36px 36px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+
+  .track {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.22;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+
+  .artist {
+    font-size: 17px;
+    color: var(--muted);
+    margin: 0 0 32px;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  button.choice {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  button.choice:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  button.choice:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button.choice:disabled { cursor: default; }
+  button.choice.pick-right {
+    background: var(--good-dim);
+    border-color: var(--good);
+    color: var(--good);
+  }
+  button.choice.pick-wrong {
+    background: var(--bad-dim);
+    border-color: var(--bad);
+    color: var(--bad);
+  }
+  button.choice.fade { opacity: 0.4; }
+
+  .reveal {
+    margin-top: 30px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: none;
+  }
+  .reveal.show { display: block; }
+
+  .verdict {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 20px;
+  }
+  .verdict.right { color: var(--good); }
+  .verdict.wrong { color: var(--bad); }
+
+  .count {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .count-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 2px 0 20px;
+  }
+
+  .meter {
+    position: relative;
+    height: 8px;
+    background: var(--panel-2);
+    border-radius: 4px;
+    margin: 6px 0 28px;
+    overflow: visible;
+  }
+  .meter-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .meter-line {
+    position: absolute;
+    top: -5px;
+    bottom: -5px;
+    width: 2px;
+    background: var(--text);
+    left: var(--line-pos, 50%);
+  }
+
+  .meter-caption {
+    display: flex;
+    justify-content: space-between;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    margin-top: 8px;
+  }
+
+  .margin-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 26px 0 0;
+  }
+
+  button.next {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 13px 22px;
+    margin-top: 26px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  button.next:hover { opacity: 0.88; }
+  button.next:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .result .track { font-size: 44px; }
+  .result .tier { color: var(--accent); }
+  .result .artist { margin-bottom: 26px; }
+
+  footer.credit {
+    margin-top: 28px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 28px 14px 56px; }
+    header.top { margin-bottom: 22px; }
+    .progress { margin-bottom: 26px; }
+    .card { padding: 28px 20px 24px; border-radius: 12px; }
+    .track { font-size: 24px; }
+    .result .track { font-size: 34px; }
+    .artist { font-size: 15px; margin-bottom: 26px; }
+    .choices { grid-template-columns: 1fr; }
+    button.choice { padding: 16px 12px; }
+    .count { font-size: 32px; }
+  }
+</style>
+
+<div class="stage">
+  <header class="top">
+    <div class="brand">The <span>Billion</span> Club</div>
+    <div class="score">Score <b id="scoreVal">0</b> / 10</div>
+  </header>
+  <div class="progress" id="progress"></div>
+  <div class="card" id="card"></div>
+  <footer class="credit">Stream counts from kworb.net's all-time Spotify chart, checked 2026-07-10.</footer>
+</div>
+
+<script>
+  const POOL = [{"artist": "Ed Sheeran", "title": "Shape of You", "streams": 4996915830}, {"artist": "Vance Joy", "title": "Riptide", "streams": 3776004548}, {"artist": "The Weeknd", "title": "Die For You", "streams": 3330626100}, {"artist": "Twenty One Pilots", "title": "Stressed Out", "streams": 3091509415}, {"artist": "The Weeknd", "title": "Save Your Tears", "streams": 2769491569}, {"artist": "Keane", "title": "Somewhere Only We Know", "streams": 2614195508}, {"artist": "Eminem", "title": "Till I Collapse", "streams": 2533531912}, {"artist": "Queen", "title": "Another One Bites The Dust", "streams": 2474998037}, {"artist": "Arctic Monkeys", "title": "Why'd You Only Call Me When You're High?", "streams": 2396712976}, {"artist": "Justin Bieber", "title": "Ghost", "streams": 2329226127}, {"artist": "Ariana Grande", "title": "thank u, next", "streams": 2273353281}, {"artist": "The Weeknd", "title": "Can't Feel My Face", "streams": 2212037577}, {"artist": "Bruno Mars", "title": "Talking to the Moon", "streams": 2173786544}, {"artist": "Harry Styles", "title": "Adore You", "streams": 2126471727}, {"artist": "R.E.M.", "title": "Losing My Religion", "streams": 2065906432}, {"artist": "The Script", "title": "Hall of Fame", "streams": 2021740144}, {"artist": "P!nk", "title": "Just Give Me a Reason", "streams": 1985963387}, {"artist": "Sam Smith", "title": "Unholy", "streams": 1947114516}, {"artist": "d4vd", "title": "Romantic Homicide", "streams": 1916311702}, {"artist": "Maroon 5", "title": "Girls Like You", "streams": 1869482819}, {"artist": "d4vd", "title": "Here With Me", "streams": 1835406508}, {"artist": "Kate Bush", "title": "Running Up That Hill (A Deal With God)", "streams": 1765392507}, {"artist": "KAROL G", "title": "Tusa", "streams": 1730434704}, {"artist": "A$AP Rocky", "title": "Praise The Lord (Da Shine)", "streams": 1706381473}, {"artist": "Olivia Rodrigo", "title": "happier", "streams": 1674890132}, {"artist": "Coldplay", "title": "Adventure of a Lifetime", "streams": 1643663398}, {"artist": "Nicki Minaj", "title": "Starships", "streams": 1623369853}, {"artist": "Eslabon Armado", "title": "Ella Baila Sola", "streams": 1597492415}, {"artist": "Bebe Rexha", "title": "Meant To Be", "streams": 1578279492}, {"artist": "Cardi B", "title": "WAP", "streams": 1563539504}, {"artist": "The Clash", "title": "Should I Stay or Should I Go", "streams": 1535831744}, {"artist": "The Chainsmokers", "title": "Paris", "streams": 1512307565}, {"artist": "Selena Gomez", "title": "Lose You To Love Me", "streams": 1486453923}, {"artist": "Jimin", "title": "Like Crazy", "streams": 1465546892}, {"artist": "Taylor Swift", "title": "Look What You Made Me Do", "streams": 1448860331}, {"artist": "DJ Khaled", "title": "I'm the One", "streams": 1430722068}, {"artist": "Imagine Dragons", "title": "Bad Liar", "streams": 1415711144}, {"artist": "Myke Towers", "title": "LALA", "streams": 1401784742}, {"artist": "Kanye West", "title": "Bound 2", "streams": 1387128624}, {"artist": "Tove Lo", "title": "Habits (Stay High)", "streams": 1368637013}, {"artist": "Ali Gatie", "title": "It's You", "streams": 1354186921}, {"artist": "Frank Ocean", "title": "Ivy", "streams": 1339022799}, {"artist": "Jack Ü", "title": "Where Are Ü Now", "streams": 1326091596}, {"artist": "Calum Scott", "title": "You Are The Reason", "streams": 1311929699}, {"artist": "Lil Uzi Vert", "title": "The Way Life Goes", "streams": 1293237205}, {"artist": "21 Savage", "title": "Bank Account", "streams": 1282744449}, {"artist": "Ozuna", "title": "Se Preparó", "streams": 1266976406}, {"artist": "Topic", "title": "Breaking Me", "streams": 1252048059}, {"artist": "MGMT", "title": "Kids", "streams": 1235879479}, {"artist": "Niall Horan", "title": "This Town", "streams": 1226349949}, {"artist": "The Cure", "title": "Boys Don't Cry", "streams": 1215009136}, {"artist": "Enrique Iglesias", "title": "Bailando", "streams": 1201065724}, {"artist": "Crowded House", "title": "Don't Dream It's Over", "streams": 1189468893}, {"artist": "Post Malone", "title": "Go Flex", "streams": 1178659429}, {"artist": "Van Halen", "title": "Jump", "streams": 1168218496}, {"artist": "The Marías", "title": "No One Noticed", "streams": 1158334857}, {"artist": "Taylor Swift", "title": "You Need To Calm Down", "streams": 1146316502}, {"artist": "Linkin Park", "title": "Somewhere I Belong", "streams": 1136312721}, {"artist": "Lorde", "title": "Team", "streams": 1123217440}, {"artist": "Queen", "title": "Killer Queen", "streams": 1115706834}, {"artist": "Mac DeMarco", "title": "My Kind of Woman", "streams": 1107475112}, {"artist": "Lizzo", "title": "Truth Hurts", "streams": 1098117423}, {"artist": "Waka Flocka Flame", "title": "No Hands", "streams": 1090221716}, {"artist": "Guns N' Roses", "title": "Knockin' On Heaven's Door", "streams": 1081087496}, {"artist": "Fifth Harmony", "title": "Worth It", "streams": 1071415892}, {"artist": "Jack Harlow", "title": "Lovin On Me", "streams": 1063806001}, {"artist": "Ellie Goulding", "title": "Burn", "streams": 1055432355}, {"artist": "Depeche Mode", "title": "Enjoy the Silence", "streams": 1048191718}, {"artist": "LMFAO", "title": "Party Rock Anthem", "streams": 1038245071}, {"artist": "Disturbed", "title": "Down with the Sickness", "streams": 1030654062}, {"artist": "Bad Bunny", "title": "WHERE SHE GOES", "streams": 1019336756}, {"artist": "Lady Gaga", "title": "Million Reasons", "streams": 1010594247}, {"artist": "Rihanna", "title": "Bitch Better Have My Money", "streams": 1004907288}, {"artist": "Bruno Mars", "title": "Finesse", "streams": 998995592}, {"artist": "Marshmello", "title": "El Merengue", "streams": 990398992}, {"artist": "Zion & Lennox", "title": "Yo Voy", "streams": 984593867}, {"artist": "Stromae", "title": "Alors on danse", "streams": 978226805}, {"artist": "Kanye West", "title": "All Of The Lights", "streams": 974253643}, {"artist": "Beyoncé", "title": "CUFF IT", "streams": 969403805}, {"artist": "Pitbull", "title": "Fireball", "streams": 963342259}, {"artist": "Aventura", "title": "Volví", "streams": 957353525}, {"artist": "Bruno Mars", "title": "Count on Me", "streams": 952362706}, {"artist": "Tom Petty", "title": "Free Fallin'", "streams": 945639864}, {"artist": "Lana Del Rey", "title": "Doin' Time", "streams": 940326187}, {"artist": "Black Eyed Peas", "title": "Just Can't Get Enough", "streams": 935836969}, {"artist": "Childish Gambino", "title": "Heartbeat", "streams": 927430055}, {"artist": "T-Pain", "title": "Buy U a Drank (Shawty Snappin')", "streams": 922574993}, {"artist": "Cascada", "title": "Everytime We Touch", "streams": 917921241}, {"artist": "Rixton", "title": "Me And My Broken Heart", "streams": 913651750}, {"artist": "Kendrick Lamar", "title": "tv off", "streams": 910593074}, {"artist": "Buffalo Springfield", "title": "For What It's Worth", "streams": 904763356}, {"artist": "Kaash Paige", "title": "Love Songs", "streams": 900230690}, {"artist": "Wiz Khalifa", "title": "Black and Yellow", "streams": 895946298}, {"artist": "Zion & Lennox", "title": "La player (Bandolera)", "streams": 891565875}, {"artist": "Boza", "title": "Hecha Pa' Mi", "streams": 888090716}, {"artist": "Bazzi", "title": "Beautiful", "streams": 884005078}, {"artist": "Kansas", "title": "Carry on Wayward Son", "streams": 880685599}, {"artist": "John Mayer", "title": "New Light", "streams": 877347622}, {"artist": "Tainy", "title": "MOJABI GHOST", "streams": 871305474}, {"artist": "Troye Sivan", "title": "Strawberries & Cigarettes", "streams": 868793100}, {"artist": "Florence + The Machine", "title": "You've Got The Love", "streams": 864354651}, {"artist": "Young Thug", "title": "The London", "streams": 860871977}, {"artist": "Sabrina Carpenter", "title": "Bed Chem", "streams": 857537237}, {"artist": "Labrinth", "title": "Jealous", "streams": 853536287}, {"artist": "Backstreet Boys", "title": "Everybody (Backstreet's Back)", "streams": 849258229}, {"artist": "Martin Jensen", "title": "Solo Dance", "streams": 843772784}, {"artist": "Lana Del Rey", "title": "Radio", "streams": 840362115}, {"artist": "Owl City", "title": "Good Time", "streams": 833884038}, {"artist": "Drake", "title": "Take Care", "streams": 830617777}, {"artist": "Fujii Kaze", "title": "Shinunoga E-Wa", "streams": 827253987}, {"artist": "Shania Twain", "title": "You're Still The One", "streams": 822029308}, {"artist": "The Strokes", "title": "Last Nite", "streams": 818836280}, {"artist": "Coldplay", "title": "Magic", "streams": 815392531}, {"artist": "Sean Paul", "title": "Get Busy", "streams": 812104804}, {"artist": "Lil Uzi Vert", "title": "Money Longer", "streams": 809369997}, {"artist": "Myke Towers", "title": "Bandido", "streams": 805133416}, {"artist": "grandson", "title": "Blood // Water", "streams": 802132990}, {"artist": "Tove Lo", "title": "Talking Body", "streams": 799565868}, {"artist": "Cardi B", "title": "Up", "streams": 797324193}, {"artist": "Stevie Wonder", "title": "Signed, Sealed, Delivered (I'm Yours)", "streams": 793776965}];
+
+  const QUESTION_COUNT = 10;
+  const BILLION = 1000000000;
+  const SCALE_MIN = 6.5e8;
+  const SCALE_MAX = 5.6e9;
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickQuestions() {
+    const above = shuffle(POOL.filter((s) => s.streams >= BILLION));
+    const below = shuffle(POOL.filter((s) => s.streams < BILLION));
+    const minEach = 4;
+    const guaranteed = above.slice(0, minEach).concat(below.slice(0, minEach));
+    const used = new Set(guaranteed.map((s) => s.artist + s.title));
+    const rest = shuffle(POOL.filter((s) => !used.has(s.artist + s.title)));
+    const filler = rest.slice(0, QUESTION_COUNT - guaranteed.length);
+    return shuffle(guaranteed.concat(filler));
+  }
+
+  let QUESTIONS = pickQuestions();
+  let idx = 0;
+  let score = 0;
+  let answered = false;
+  let results = new Array(QUESTIONS.length).fill(null);
+
+  const card = document.getElementById("card");
+  const progressEl = document.getElementById("progress");
+  const scoreVal = document.getElementById("scoreVal");
+
+  function fmt(n) {
+    return n.toLocaleString("en-US");
+  }
+
+  function logPct(value) {
+    const p = (Math.log10(value) - Math.log10(SCALE_MIN)) / (Math.log10(SCALE_MAX) - Math.log10(SCALE_MIN));
+    return Math.max(0, Math.min(100, p * 100));
+  }
+
+  function renderProgress() {
+    progressEl.innerHTML = "";
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const seg = document.createElement("i");
+      if (results[i] === "right") seg.className = "right";
+      else if (results[i] === "wrong") seg.className = "wrong";
+      else if (i < idx) seg.className = "done";
+      progressEl.appendChild(seg);
+    }
+  }
+
+  function renderQuestion() {
+    answered = false;
+    const q = QUESTIONS[idx];
+    card.innerHTML = `
+      <p class="eyebrow">Question ${idx + 1} of ${QUESTIONS.length}</p>
+      <p class="track">${q.title}</p>
+      <p class="artist">${q.artist}</p>
+      <div class="choices">
+        <button class="choice" data-side="over">Over a billion</button>
+        <button class="choice" data-side="under">Under a billion</button>
+      </div>
+      <div class="reveal" id="reveal">
+        <p class="verdict" id="verdict"></p>
+        <div class="count" id="count">0</div>
+        <p class="count-label">Total Spotify streams</p>
+        <div class="meter">
+          <div class="meter-fill" id="meterFill"></div>
+          <div class="meter-line" id="meterLine"></div>
+        </div>
+        <div class="meter-caption"><span>650M</span><span>1,000,000,000 streams</span><span>5.6B</span></div>
+        <p class="margin-note" id="marginNote"></p>
+        <button class="next" id="nextBtn"></button>
+      </div>
+    `;
+    card.querySelectorAll(".choice").forEach((btn) => {
+      btn.addEventListener("click", () => choose(btn.dataset.side));
+    });
+  }
+
+  function choose(side) {
+    if (answered) return;
+    answered = true;
+    const q = QUESTIONS[idx];
+    const actualSide = q.streams >= BILLION ? "over" : "under";
+    const isRight = side === actualSide;
+    results[idx] = isRight ? "right" : "wrong";
+    if (isRight) score++;
+    scoreVal.textContent = score;
+    renderProgress();
+
+    card.querySelectorAll(".choice").forEach((btn) => {
+      btn.disabled = true;
+      if (btn.dataset.side === side) {
+        btn.classList.add(isRight ? "pick-right" : "pick-wrong");
+      } else if (btn.dataset.side === actualSide) {
+        btn.classList.add("pick-right");
+      } else {
+        btn.classList.add("fade");
+      }
+    });
+
+    const verdict = document.getElementById("verdict");
+    verdict.textContent = isRight ? "Correct." : "Not quite.";
+    verdict.className = "verdict " + (isRight ? "right" : "wrong");
+
+    document.getElementById("meterLine").style.setProperty("--line-pos", logPct(BILLION) + "%");
+
+    const margin = Math.abs(q.streams - BILLION);
+    const marginNote = document.getElementById("marginNote");
+    if (margin < 40000000) {
+      marginNote.textContent =
+        (q.streams >= BILLION ? "Just " : "Just ") +
+        fmt(margin) +
+        (q.streams >= BILLION ? " streams over the line" : " streams short of the line") +
+        " — one of the closest calls in the club.";
+    } else {
+      marginNote.textContent =
+        q.streams >= BILLION
+          ? fmt(margin) + " streams clear of the billion mark."
+          : fmt(margin) + " streams short of the billion mark.";
+    }
+
+    const nextBtn = document.getElementById("nextBtn");
+    nextBtn.textContent = idx === QUESTIONS.length - 1 ? "See results" : "Next question";
+    nextBtn.addEventListener("click", () => {
+      idx++;
+      if (idx >= QUESTIONS.length) renderResults();
+      else renderQuestion();
+    });
+
+    const reveal = document.getElementById("reveal");
+    reveal.classList.add("show");
+
+    const countEl = document.getElementById("count");
+    const fillEl = document.getElementById("meterFill");
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const target = q.streams;
+    const targetPct = logPct(target);
+
+    if (prefersReduced) {
+      countEl.textContent = fmt(target);
+      fillEl.style.width = targetPct + "%";
+    } else {
+      requestAnimationFrame(() => {
+        fillEl.style.width = targetPct + "%";
+      });
+      const duration = 1100;
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        countEl.textContent = fmt(Math.round(target * eased));
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+  }
+
+  function tier(s) {
+    if (s <= 3) return "Casual listener";
+    if (s <= 6) return "Certified fan";
+    if (s <= 8) return "Chart watcher";
+    return "Streaming savant";
+  }
+
+  function renderResults() {
+    card.innerHTML = `
+      <div class="result">
+        <p class="eyebrow">Final score</p>
+        <p class="track">${score} / ${QUESTIONS.length}</p>
+        <p class="artist tier">${tier(score)}</p>
+        <button class="next" id="replayBtn">Play again</button>
+      </div>
+    `;
+    document.getElementById("replayBtn").addEventListener("click", () => {
+      QUESTIONS = pickQuestions();
+      idx = 0;
+      score = 0;
+      results = new Array(QUESTIONS.length).fill(null);
+      scoreVal.textContent = "0";
+      renderProgress();
+      renderQuestion();
+    });
+  }
+
+  renderProgress();
+  renderQuestion();
+</script>
