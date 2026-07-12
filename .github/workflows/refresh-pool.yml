@@ -1,0 +1,42 @@
+name: Refresh song pool
+
+# Weekly rebuild of data.js from kworb.net's Spotify charts. Opens a PR with the
+# refreshed pool for review; merging it redeploys the GitHub Pages site.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run tests
+        run: uv run -m pytest -q
+
+      - name: Regenerate data.js
+        run: uv run scripts/build_pool.py
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: refresh-song-pool
+          commit-message: "chore: refresh song pool from kworb charts"
+          title: "Weekly song pool refresh"
+          body: |
+            Automated weekly refresh of `data.js` from kworb.net's Spotify charts.
+
+            Review the song diff, then merge to deploy. If the run produced no
+            changes, no PR is opened.
+          delete-branch: true
