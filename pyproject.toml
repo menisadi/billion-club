@@ -5,3 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+# scripts/ is not a package; tests import build_pool from it, so tell ty and
+# pytest where to find it.
+[tool.ty.environment]
+extra-paths = ["scripts"]
+
+[tool.pytest.ini_options]
+pythonpath = ["scripts"]

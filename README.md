@@ -15,7 +15,15 @@ browser, or visit the GitHub Pages link above.
 
 ## Data
 
-Stream counts come from kworb.net's Spotify charts, checked 2026-07-10:
+The song pool lives in `data.js` and is generated from kworb.net's Spotify
+charts by `scripts/build_pool.py`. It evenly samples each side of the
+billion-stream line for a wide, balanced mix of songs.
 
 - [All-time most-streamed songs](https://kworb.net/spotify/songs.html)
 - [1990s](https://kworb.net/spotify/songs_1990.html), [1980s](https://kworb.net/spotify/songs_1980.html), [1970s](https://kworb.net/spotify/songs_1970.html), [1960s](https://kworb.net/spotify/songs_1960.html) charts
+
+Refresh the counts (regenerates `data.js` with today's date):
+
+```
+uv run scripts/build_pool.py            # or --dry-run to preview the diff
+```

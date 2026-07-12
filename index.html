@@ -280,7 +280,7 @@
   </header>
   <div class="progress" id="progress"></div>
   <div class="card" id="card"></div>
-  <footer class="credit">Stream counts from kworb.net's all-time Spotify chart, checked 2026-07-10.</footer>
+  <footer class="credit">Stream counts from kworb.net's Spotify charts, updated <span id="updated"></span>.</footer>
 </div>
 
 <script src="data.js"></script>
@@ -475,6 +475,7 @@
     });
   }
 
+  document.getElementById("updated").textContent = POOL_UPDATED;
   renderProgress();
   renderQuestion();
 </script>
