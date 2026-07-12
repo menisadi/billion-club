@@ -35,14 +35,14 @@ BILLION = 1_000_000_000
 ALL_TIME_URL = f"{BASE}/songs.html"
 ALL_TIME_SKIP = 1  # skip rank #1 (the too-obvious emblem of the club)
 DECADES = ("1990", "1980", "1970", "1960")
-OVER_TARGET = 125  # over-billion songs sampled across 1B .. top
-UNDER_TARGET = 125  # sub-billion songs sampled across floor .. 1B
-UNDER_FLOOR = 250_000_000  # drop ultra-obscure songs below this
+OVER_TARGET = 250  # over-billion songs sampled across 1B .. top
+UNDER_TARGET = 250  # sub-billion songs sampled across floor .. 1B
+UNDER_FLOOR = 400_000_000  # drop ultra-obscure songs below this
 
 # Safety guards — abort rather than write a broken data.js.
 MIN_ROWS_PER_PAGE = 100
-MIN_POOL = 200
-MAX_POOL = 260
+MIN_POOL = 400
+MAX_POOL = 520
 MIN_EACH_SIDE = 20  # over- and under-billion songs; runtime needs >= 4 of each
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

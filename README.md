@@ -9,7 +9,7 @@ Live at https://menisadi.github.io/billion-club/
 ## How it works
 
 `index.html` is a single self-contained page (no build step, no dependencies)
-that draws 10 questions per game from a pool of 250 songs, guaranteeing at
+that draws 10 questions per game from a pool of 500 songs, guaranteeing at
 least 4 above and 4 below the billion-stream mark. Just open the file in a
 browser, or visit the GitHub Pages link above.
 
